@@ -9,6 +9,7 @@ dataset/valmask2017
 dataset/*.h5
 dataset/annotations
 dataset/coco
+dataset/cocoapi
 .idea
 __pycache__
 .ipynb_checkpoints
