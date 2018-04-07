@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append('dataset/cocoapi/PythonAPI')
 from pycocotools.coco import COCO
+
 from scipy.spatial.distance import cdist
 import numpy as np
 import cv2
@@ -9,13 +12,14 @@ import os.path
 import h5py
 import json
 
-dataset_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'dataset'))
+# dataset_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'dataset'))
+dataset_dir = '/mnt/data/coco'
 
 tr_anno_path = os.path.join(dataset_dir, "annotations/person_keypoints_train2017.json")
-tr_img_dir = os.path.join(dataset_dir, "train2017")
+tr_img_dir = os.path.join(dataset_dir, "images", "train2017")
 
 val_anno_path = os.path.join(dataset_dir, "annotations/person_keypoints_val2017.json")
-val_img_dir = os.path.join(dataset_dir, "val2017")
+val_img_dir = os.path.join(dataset_dir, "images", "val2017")
 
 datasets = [
     (val_anno_path, val_img_dir, "COCO_val"),  # it is important to have 'val' in validation dataset name, look for 'val' below
@@ -257,6 +261,7 @@ def process():
                 if cached_img_id!=data['image_id']:
                     assert img_id == data['image_id']
                     cached_img_id = data['image_id']
+
                     img, mask_miss = make_mask(img_dir, cached_img_id, img_anns, coco)
 
                 if data['isValidation']:

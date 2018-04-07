@@ -1,31 +1,43 @@
-import sys
-sys.path.append("..")
-
+import argparse
 from training.train_common import prepare, train, validate, save_network_input_output, test_augmentation_speed
 from training.ds_generators import DataGeneratorClient, DataIterator
 from config import COCOSourceConfig, GetConfig
 
-use_client_gen = False
-batch_size = 10
+parser = argparse.ArgumentParser()
+parser.add_argument('--task', type=str, required=True, default='train', help='task')
+parser.add_argument('--config_name', type=str, default='Canonical', help='config name')
+parser.add_argument('--experiment_name', type=str, default=None, help='experiment name')
+parser.add_argument('--epoch', type=int, default=0, help='epoch')
+parser.add_argument('--batch_size', type=int, default=10, help='batch_size')
+parser.add_argument('--datapath', type=str, default='dataset', help='path to the dataset')
+parser.add_argument('--modelpath', type=str, default='/mnt/models', help='path to the dataset')
+parser.add_argument('--logpath', type=str, default='/mnt/logs', help='path to the dataset')
+parser.add_argument('--use_client_gen', action='store_true', help='use rmpe server')
+args = parser.parse_args()
 
-task = sys.argv[1] if len(sys.argv)>1 else "train"
-config_name = sys.argv[2] if len(sys.argv)>2 else "Canonical"
-experiment_name = sys.argv[3] if len(sys.argv)>3 else None
-if experiment_name=='': experiment_name=None
-epoch = int(sys.argv[4]) if len(sys.argv)>4 and sys.argv[4]!='' else None
+
+task = args.task
+config_name = args.config_name
+experiment_name = args.experiment_name
+epoch = args.epoch
+datapath = args.datapath
+modelpath = args.modelpath
+logpath = args.logpath
+batch_size = args.batch_size
+use_client_gen = False
 
 config = GetConfig(config_name)
 
-train_client = DataIterator(config, COCOSourceConfig("../dataset/coco_train_dataset.h5"), shuffle=True,
+train_client = DataIterator(config, COCOSourceConfig(datapath + "/coco_train_dataset.h5"), shuffle=True,
                             augment=True, batch_size=batch_size)
-val_client = DataIterator(config, COCOSourceConfig("../dataset/coco_val_dataset.h5"), shuffle=False, augment=False,
+val_client = DataIterator(config, COCOSourceConfig(datapath + "/coco_val_dataset.h5"), shuffle=False, augment=False,
                           batch_size=batch_size)
 
 train_samples = train_client.num_samples()
 val_samples = val_client.num_samples()
 
 model, iterations_per_epoch, validation_steps, epoch, metrics_id, callbacks_list = \
-    prepare(config=config, config_name=config_name, exp_id=experiment_name, train_samples = train_samples, val_samples = val_samples, batch_size=batch_size, epoch=epoch)
+    prepare(config=config, config_name=config_name, exp_id=experiment_name, train_samples = train_samples, val_samples = val_samples, batch_size=batch_size, epoch=epoch, logpath=logpath, modelpath=modelpath)
 
 
 if task == "train":

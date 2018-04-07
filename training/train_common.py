@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import os
 import math
-sys.path.append("..")
-
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -52,16 +53,16 @@ def get_last_epoch_and_weights_file(WEIGHT_DIR, WEIGHTS_SAVE, epoch):
 # training/canonical/exp2
 # training/canonical_exp2.csv
 
-def prepare(config, config_name, exp_id, train_samples, val_samples, batch_size, epoch=None ):
+def prepare(config, config_name, exp_id, train_samples, val_samples, batch_size, epoch=None, modelpath='.', logpath='.'):
 
     metrics_id = config_name + "_" + exp_id if exp_id is not None else config_name
     weights_id = config_name + "/" + exp_id if exp_id is not None else config_name
 
-    WEIGHT_DIR = "./" + weights_id
+    WEIGHT_DIR = Path(modelpath, weights_id).as_posix()
     WEIGHTS_SAVE = 'weights.{epoch:04d}.h5'
 
-    TRAINING_LOG = "./" + metrics_id + ".csv"
-    LOGS_DIR = "./logs"
+    TRAINING_LOG = Path(logpath, metrics_id + ".csv").as_posix()
+    LOGS_DIR = Path(logpath).as_posix()
 
     model = get_training_model(weight_decay, np_branch1=config.paf_layers, np_branch2=config.heat_layers+1)
     lr_mult = get_lrmult(model)
@@ -70,7 +71,7 @@ def prepare(config, config_name, exp_id, train_samples, val_samples, batch_size,
     last_epoch, wfile = get_last_epoch_and_weights_file(WEIGHT_DIR, WEIGHTS_SAVE, epoch)
     print("last_epoch:",last_epoch)
 
-    if wfile is not None:
+    if wfile is not None and Path(wfile).exists():
         print("Loading %s ..." % wfile)
 
         model.load_weights(wfile)
